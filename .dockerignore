@@ -1,0 +1,9 @@
+target/
+.git/
+.idea/
+.vscode/
+.docker-local/
+.m2/
+.env
+.env.*
+*.log

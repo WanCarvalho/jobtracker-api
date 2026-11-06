@@ -1,0 +1,2 @@
+Caso o Maven Wrapper não esteja disponível: mvn wrapper:wrapper
+Depois execute: .\mvnw.cmd spring-boot:run

@@ -1,0 +1,54 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+spring:
+  application:
+    name: jobtracker-api
+  datasource:
+    url: jdbc:h2:mem:jobtracker;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+app:
+  jwt:
+    secret: ${JWT_SECRET:jobtracker-development-secret-key-change-this-before-production-123456}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  bootstrap:
+    superadmin-email: ${SUPERADMIN_EMAIL:admin@jobtracker.local}
+    superadmin-password: ${SUPERADMIN_PASSWORD:Admin123!}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://127.0.0.1:5433/jobtracker}
+    username: ${DATABASE_USERNAME:jobtracker}
+    password: ${DATABASE_PASSWORD:jobtracker}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

@@ -1,0 +1,288 @@
+{
+  "info": {
+    "name": "JobTracker API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "companyId",
+      "value": "1"
+    },
+    {
+      "key": "stageId",
+      "value": "1"
+    },
+    {
+      "key": "applicationId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Usuário Teste\",\"email\":\"teste@example.com\",\"password\":\"SenhaForte123\"}"
+            }
+          }
+        },
+        {
+          "name": "Login user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"teste@example.com\",\"password\":\"SenhaForte123\"}"
+            }
+          }
+        },
+        {
+          "name": "Login superadmin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"admin@jobtracker.local\",\"password\":\"Admin123!\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stages",
+      "item": [
+        {
+          "name": "List stages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/stages"
+          }
+        },
+        {
+          "name": "Create stage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/stages",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Inscrição realizada\",\"position\":0,\"color\":\"#64748b\",\"isFinal\":false}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "Create company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/companies",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Empresa Exemplo\",\"cnpj\":\"12345678000199\",\"website\":\"https://example.com\",\"description\":\"Empresa de demonstração\"}"
+            }
+          }
+        },
+        {
+          "name": "List visible companies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/companies"
+          }
+        },
+        {
+          "name": "Pending companies (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/companies/pending"
+          }
+        },
+        {
+          "name": "Approve company (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/companies/{{companyId}}/approve"
+          }
+        },
+        {
+          "name": "Reject company (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/companies/{{companyId}}/reject",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\":\"Dados insuficientes para validar.\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Create application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/applications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"companyId\":1,\"stageId\":1,\"jobTitle\":\"Desenvolvedor Java\",\"salary\":5000,\"jobUrl\":\"https://example.com/vaga\",\"description\":\"Vaga backend\",\"appliedAt\":\"2026-11-05\"}"
+            }
+          }
+        },
+        {
+          "name": "List applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/applications"
+          }
+        },
+        {
+          "name": "Change stage",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/applications/{{applicationId}}/stage",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"stageId\":2,\"notes\":\"Entrevista técnica agendada.\"}"
+            }
+          }
+        },
+        {
+          "name": "Application history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/applications/{{applicationId}}/history"
+          }
+        }
+      ]
+    }
+  ]
+}
