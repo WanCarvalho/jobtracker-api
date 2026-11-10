@@ -1,0 +1,25 @@
+<div class="select-control" [class.is-open]="opened()" [class.is-disabled]="disabled()">
+  <input #control role="combobox" type="text" autocomplete="off" spellcheck="false"
+    [attr.aria-label]="ariaLabel()" [attr.aria-expanded]="opened()" aria-haspopup="listbox"
+    [attr.aria-required]="required()"
+    [attr.aria-controls]="id" [attr.aria-autocomplete]="searchable() ? 'list' : 'none'"
+    [attr.aria-activedescendant]="opened() && filtered().length ? id + '-option-' + activeIndex() : null"
+    [value]="opened() && searchable() ? query() : selected()?.label ?? ''"
+    [placeholder]="opened() && searchable() ? 'Digite para buscar…' : placeholder()"
+    [readOnly]="!searchable()" [disabled]="disabled()"
+    (click)="open()" (input)="search(control.value)" (keydown)="keydown($event)" (blur)="blur()">
+  <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+</div>
+<div #popup popover="manual" class="select-popup" [style.top]="position().top" [style.bottom]="position().bottom" [style.left]="position().left" [style.width]="position().width" [style.max-height]="position().maxHeight" (mousedown)="$event.preventDefault()">
+  @if (searchable()) { <div class="search-hint">Digite no campo para filtrar as opções</div> }
+  <ul [id]="id" role="listbox" [attr.aria-label]="ariaLabel()">
+    @for (option of filtered(); track option.value; let index = $index) {
+      <li role="option" [id]="id + '-option-' + index" [attr.aria-selected]="option.value === value()"
+        [class.active-option]="index === activeIndex()" [class.selected-option]="option.value === value()"
+        (pointermove)="activeIndex.set(index)" (click)="choose(option, $event)">
+        <span>{{ option.label }}</span>@if (option.value === value()) { <span class="checkmark" aria-hidden="true">✓</span> }
+      </li>
+    }
+  </ul>
+  @if (!filtered().length) { <p class="no-results" role="status">{{ options().length ? 'Nenhum resultado encontrado.' : 'Nenhuma opção disponível.' }}</p> }
+</div>

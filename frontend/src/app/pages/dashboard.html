@@ -14,7 +14,7 @@
         <tr><td data-label="Vaga"><div class="item-identity"><span class="item-avatar" aria-hidden="true">{{ a.jobTitle.slice(0, 1).toUpperCase() }}</span><div><span class="item-title">{{ a.jobTitle }}</span><span class="item-meta">Candidatura #{{ a.id }}</span></div></div></td>
           <td data-label="Empresa"><span class="cell-text">{{ a.companyName }}</span></td>
           <td data-label="Data da candidatura"><time class="date-cell" [attr.datetime]="a.appliedAt">{{ a.appliedAt | date:'dd/MM/yyyy':'UTC' }}</time></td>
-          <td data-label="Etapa atual"><label class="stage-control"><span class="sr-only">Alterar etapa de {{ a.jobTitle }} na empresa {{ a.companyName }}</span><select #stageSelect [value]="a.stageId" (change)="store.move(a.id, stageSelect.value)" [disabled]="store.busy()">@for (s of store.stages(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }</select></label></td>
+          <td data-label="Etapa atual"><div class="stage-control"><app-select [options]="stageOptions()" [ngModel]="a.stageId" (ngModelChange)="move(a.id, $event)" [disabled]="store.busy()" [ariaLabel]="'Alterar etapa de ' + a.jobTitle + ' na empresa ' + a.companyName" /></div></td>
         </tr>
       } @empty {
         <tr><td colspan="4" class="empty-cell"><div class="empty-state"><span class="empty-symbol" aria-hidden="true">↗</span><h3>{{ store.busy() ? 'Carregando candidaturas…' : 'Sua próxima oportunidade começa aqui' }}</h3><p>{{ store.busy() ? 'Aguarde enquanto buscamos seus dados.' : 'Cadastre sua primeira candidatura para acompanhar cada etapa do processo.' }}</p>@if (!store.busy()) { <button (click)="open()">Cadastrar candidatura</button> }</div></td></tr>
@@ -31,8 +31,8 @@
   } @else {
     <form #applicationForm="ngForm" (ngSubmit)="create()">
       <label>Vaga<input name="jobTitle" [(ngModel)]="application.jobTitle" required maxlength="180" autofocus></label>
-      <label>Empresa<select name="companyId" [(ngModel)]="application.companyId" required><option [ngValue]="null" disabled>Selecione</option>@for (c of store.companies(); track c.id) { <option [ngValue]="c.id">{{ c.name }}</option> }</select></label>
-      <label>Etapa<select name="stageId" [(ngModel)]="application.stageId" required><option [ngValue]="null" disabled>Selecione</option>@for (s of store.stages(); track s.id) { <option [ngValue]="s.id">{{ s.name }}</option> }</select></label>
+      <label>Empresa<app-select name="companyId" [options]="companyOptions()" [(ngModel)]="application.companyId" ariaLabel="Empresa" placeholder="Selecione uma empresa" [disabled]="store.busy()" [required]="true" /></label>
+      <label>Etapa<app-select name="stageId" [options]="stageOptions()" [(ngModel)]="application.stageId" ariaLabel="Etapa" placeholder="Selecione uma etapa" [disabled]="store.busy()" [required]="true" /></label>
       <label>Data da candidatura<input type="date" name="appliedAt" [(ngModel)]="application.appliedAt" required></label>
       <div class="actions modal-actions"><button type="button" (click)="close()" [disabled]="store.busy()">Cancelar</button><button class="primary" [disabled]="applicationForm.invalid || store.busy()">{{ store.busy() ? 'Salvando…' : 'Salvar candidatura' }}</button></div>
     </form>

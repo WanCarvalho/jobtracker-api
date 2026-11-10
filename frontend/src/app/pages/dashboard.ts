@@ -1,15 +1,19 @@
-import { Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { TrackerStore } from '../tracker.store';
+import { Select } from '../shared/select';
 
 @Component({
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [FormsModule, RouterLink, DatePipe, Select],
   templateUrl: './dashboard.html'
 })
 export class Dashboard {
   readonly store = inject(TrackerStore);
+  readonly companyOptions = computed(() => this.store.companies().map(company => ({ value: company.id, label: company.name })));
+  readonly stageOptions = computed(() => this.store.stages().map(stage => ({ value: stage.id, label: stage.name })));
+  move(id: number, stageId: number | null) { if (stageId !== null) this.store.move(id, String(stageId)); }
   @ViewChild('applicationDialog', { static: true }) dialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('applicationForm') form?: NgForm;
   private emptyApplication() {
