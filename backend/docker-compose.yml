@@ -1,0 +1,47 @@
+services:
+  backend:
+    build:
+      context: .
+    image: jobtracker-api:local
+    init: true
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DATABASE_URL: jdbc:postgresql://postgres:5432/jobtracker
+      DATABASE_USERNAME: jobtracker
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-jobtracker}
+      JWT_SECRET: ${JWT_SECRET:-jobtracker-development-secret-key-change-this-before-production-123456}
+      SUPERADMIN_EMAIL: ${SUPERADMIN_EMAIL:-admin@jobtracker.local}
+      SUPERADMIN_PASSWORD: ${SUPERADMIN_PASSWORD:-Admin123!}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75.0
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    mem_limit: 768m
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+  postgres:
+    image: postgres:16
+    container_name: jobtracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jobtracker
+      POSTGRES_USER: jobtracker
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-jobtracker}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - jobtracker_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobtracker -d jobtracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+volumes:
+  jobtracker_data:

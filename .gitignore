@@ -3,3 +3,9 @@ target/
 .vscode/
 *.iml
 .env
+
+node_modules/
+dist/
+.angular/
+.maven-local/
+.docker-local/

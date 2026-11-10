@@ -1,0 +1,26 @@
+<header><div><strong>JobTracker</strong><span>Seu próximo passo começa aqui.</span></div>
+  @if (store.api.session(); as user) { <div>{{ user.name }} <button (click)="store.logout()" [disabled]="store.busy()">Sair</button></div> }
+</header>
+@if (store.api.session()) {
+  <nav aria-label="Navegação principal">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" ariaCurrentWhenActive="page">Candidaturas</a>
+    <a routerLink="/empresas" routerLinkActive="active" ariaCurrentWhenActive="page">Empresas</a>
+    <a routerLink="/etapas" routerLinkActive="active" ariaCurrentWhenActive="page">Etapas</a>
+  </nav>
+}
+<main>
+  @if (store.error()) { <p class="error" role="alert">{{ store.error() }}</p> }
+  @if (!store.api.session()) {
+    <section class="auth">
+      <p class="eyebrow">ACOMPANHE SUA JORNADA</p><h1>{{ store.register ? 'Crie sua conta' : 'Bem-vindo de volta' }}</h1>
+      <p>Organize empresas, etapas e candidaturas em um só lugar.</p>
+      <form #auth="ngForm" (ngSubmit)="store.login()">
+        @if (store.register) { <label>Nome<input name="name" [(ngModel)]="store.credentials.name" required maxlength="120" autocomplete="name"></label> }
+        <label>E-mail<input name="email" type="email" [(ngModel)]="store.credentials.email" required email autocomplete="email"></label>
+        <label>Senha<input name="password" type="password" [(ngModel)]="store.credentials.password" required [minlength]="store.register ? 8 : 1" [autocomplete]="store.register ? 'new-password' : 'current-password'"></label>
+        <button class="primary" [disabled]="auth.invalid || store.busy()">{{ store.busy() ? 'Aguarde…' : store.register ? 'Criar conta' : 'Entrar' }}</button>
+      </form>
+      <button class="link" (click)="store.register = !store.register" [disabled]="store.busy()">{{ store.register ? 'Já tenho uma conta' : 'Quero me cadastrar' }}</button>
+    </section>
+  } @else { <router-outlet /> }
+</main>
