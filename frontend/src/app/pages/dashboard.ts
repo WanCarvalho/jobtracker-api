@@ -9,26 +9,39 @@ import { Application } from '../api';
 
 @Component({
   imports: [FormsModule, RouterLink, DatePipe, Select, DeleteDialog],
-  templateUrl: './dashboard.html'
+  templateUrl: './dashboard.html',
 })
 export class Dashboard {
   readonly store = inject(TrackerStore);
-  readonly companyOptions = computed(() => this.store.companies().map(company => ({ value: company.id, label: company.name })));
-  readonly stageOptions = computed(() => this.store.stages().map(stage => ({ value: stage.id, label: stage.name })));
+  readonly companyOptions = computed(() =>
+    this.store.companies().map((company) => ({ value: company.id, label: company.name })),
+  );
+  readonly stageOptions = computed(() =>
+    this.store.stages().map((stage) => ({ value: stage.id, label: stage.name })),
+  );
   optionsFor(application: Application) {
     const options = this.stageOptions();
-    return options.some(s => s.value === application.stageId) ? options
-      : [...options, { value: application.stageId, label: application.stageName + ' (desativada)' }];
+    return options.some((s) => s.value === application.stageId)
+      ? options
+      : [
+          ...options,
+          { value: application.stageId, label: application.stageName + ' (desativada)' },
+        ];
   }
   move(id: number, stageId: number | null) {
-    if (stageId !== null && this.store.applications().find(a => a.id === id)?.stageId !== stageId) this.store.move(id, String(stageId));
+    if (stageId !== null && this.store.applications().find((a) => a.id === id)?.stageId !== stageId)
+      this.store.move(id, String(stageId));
   }
   @ViewChild('applicationDialog', { static: true }) dialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('applicationForm') form?: NgForm;
   private emptyApplication() {
     const now = new Date();
-    return { jobTitle: '', companyId: null as number | null, stageId: null as number | null,
-      appliedAt: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` };
+    return {
+      jobTitle: '',
+      companyId: null as number | null,
+      stageId: null as number | null,
+      appliedAt: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`,
+    };
   }
   application = this.emptyApplication();
   open() {
@@ -37,8 +50,12 @@ export class Dashboard {
     this.form?.resetForm(this.application);
     this.dialog.nativeElement.showModal();
   }
-  close() { if (!this.store.busy()) this.dialog.nativeElement.close(); }
-  cancel(event: Event) { if (this.store.busy()) event.preventDefault(); }
+  close() {
+    if (!this.store.busy()) this.dialog.nativeElement.close();
+  }
+  cancel(event: Event) {
+    if (this.store.busy()) event.preventDefault();
+  }
   create() {
     if (!this.form || this.form.invalid) return;
     void this.store.run(async () => {

@@ -1,4 +1,7 @@
 package com.jobtracker.enums;
 
-
-public enum CompanyApprovalStatus { PENDING, APPROVED, REJECTED }
+public enum CompanyApprovalStatus {
+    PENDING,
+    APPROVED,
+    REJECTED
+}

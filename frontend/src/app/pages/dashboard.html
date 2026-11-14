@@ -1,42 +1,210 @@
-<div class="heading"><div><p class="eyebrow">VISÃO GERAL</p><h1>Minhas candidaturas</h1></div>
-  <div class="actions"><button (click)="store.refresh()" [disabled]="store.busy()">{{ store.busy() ? 'Carregando…' : 'Atualizar' }}</button><button class="primary" (click)="open()" [disabled]="store.busy()">Cadastrar candidatura</button></div>
+<div class="heading">
+  <div>
+    <p class="eyebrow">VISÃO GERAL</p>
+    <h1>Minhas candidaturas</h1>
+  </div>
+  <div class="actions">
+    <button (click)="store.refresh()" [disabled]="store.busy()">
+      {{ store.busy() ? 'Carregando…' : 'Atualizar' }}
+    </button>
+    <button class="primary" (click)="open()" [disabled]="store.busy()">
+      Cadastrar candidatura
+    </button>
+  </div>
 </div>
 @if (store.summary(); as s) {
-  <div class="stats"><article><span>Total</span><strong>{{ s.totalApplications }}</strong></article><article><span>Em andamento</span><strong>{{ s.activeApplications }}</strong></article><article><span>Finalizadas</span><strong>{{ s.finalApplications }}</strong></article></div>
+  <div class="stats">
+    <article>
+      <span>Total</span>
+      <strong>{{ s.totalApplications }}</strong>
+    </article>
+    <article>
+      <span>Em andamento</span>
+      <strong>{{ s.activeApplications }}</strong>
+    </article>
+    <article>
+      <span>Finalizadas</span>
+      <strong>{{ s.finalApplications }}</strong>
+    </article>
+  </div>
 }
 <section class="list-panel" aria-labelledby="applications-heading" [attr.aria-busy]="store.busy()">
-  <div class="list-heading"><div><h2 id="applications-heading">Candidaturas <span class="count-badge">{{ store.applications().length }}</span></h2><p>Acompanhe suas oportunidades e atualize a etapa de cada processo.</p></div><span class="list-hint">Mais recentes primeiro</span></div>
+  <div class="list-heading">
+    <div>
+      <h2 id="applications-heading">
+        Candidaturas
+        <span class="count-badge">{{ store.applications().length }}</span>
+      </h2>
+      <p>Acompanhe suas oportunidades e atualize a etapa de cada processo.</p>
+    </div>
+    <span class="list-hint">Mais recentes primeiro</span>
+  </div>
   <table class="data-table">
     <caption class="sr-only">Suas candidaturas, empresas, datas e etapas atuais</caption>
-    <thead><tr><th scope="col">Vaga</th><th scope="col">Empresa</th><th scope="col">Data da candidatura</th><th scope="col">Etapa atual</th><th scope="col">Ações</th></tr></thead>
+    <thead>
+      <tr>
+        <th scope="col">Vaga</th>
+        <th scope="col">Empresa</th>
+        <th scope="col">Data da candidatura</th>
+        <th scope="col">Etapa atual</th>
+        <th scope="col">Ações</th>
+      </tr>
+    </thead>
     <tbody>
       @for (a of store.applications(); track a.id) {
-        <tr><td data-label="Vaga"><div class="item-identity"><span class="item-avatar" aria-hidden="true">{{ a.jobTitle.slice(0, 1).toUpperCase() }}</span><div><span class="item-title">{{ a.jobTitle }}</span><span class="item-meta">Candidatura #{{ a.id }}</span></div></div></td>
-          <td data-label="Empresa"><span class="cell-text">{{ a.companyName }}</span></td>
-          <td data-label="Data da candidatura"><time class="date-cell" [attr.datetime]="a.appliedAt">{{ a.appliedAt | date:'dd/MM/yyyy':'UTC' }}</time></td>
-          <td data-label="Etapa atual"><div class="stage-control"><app-select [options]="optionsFor(a)" [ngModel]="a.stageId" (ngModelChange)="move(a.id, $event)" [disabled]="store.busy()" [ariaLabel]="'Alterar etapa de ' + a.jobTitle + ' na empresa ' + a.companyName" /></div></td>
-          <td data-label="Ações"><div class="actions row-actions"><a class="button-link" [routerLink]="['/candidaturas', a.id]" [attr.aria-label]="'Visualizar ' + a.jobTitle">Visualizar</a><a class="button-link" [routerLink]="['/candidaturas', a.id, 'editar']" [attr.aria-label]="'Editar ' + a.jobTitle">Editar</a><button class="danger" (click)="deletion.open('/applications/' + a.id, a.jobTitle)" [disabled]="store.busy()" [attr.aria-label]="'Excluir ' + a.jobTitle">Excluir</button></div></td>
+        <tr>
+          <td data-label="Vaga">
+            <div class="item-identity">
+              <span class="item-avatar" aria-hidden="true">
+                {{ a.jobTitle.slice(0, 1).toUpperCase() }}
+              </span>
+              <div>
+                <span class="item-title">{{ a.jobTitle }}</span>
+                <span class="item-meta">Candidatura #{{ a.id }}</span>
+              </div>
+            </div>
+          </td>
+          <td data-label="Empresa">
+            <span class="cell-text">{{ a.companyName }}</span>
+          </td>
+          <td data-label="Data da candidatura">
+            <time class="date-cell" [attr.datetime]="a.appliedAt">
+              {{ a.appliedAt | date: 'dd/MM/yyyy' : 'UTC' }}
+            </time>
+          </td>
+          <td data-label="Etapa atual">
+            <div class="stage-control">
+              <app-select
+                [options]="optionsFor(a)"
+                [ngModel]="a.stageId"
+                (ngModelChange)="move(a.id, $event)"
+                [disabled]="store.busy()"
+                [ariaLabel]="'Alterar etapa de ' + a.jobTitle + ' na empresa ' + a.companyName"
+              />
+            </div>
+          </td>
+          <td data-label="Ações">
+            <div class="actions row-actions">
+              <a
+                class="button-link"
+                [routerLink]="['/candidaturas', a.id]"
+                [attr.aria-label]="'Visualizar ' + a.jobTitle"
+              >
+                Visualizar
+              </a>
+              <a
+                class="button-link"
+                [routerLink]="['/candidaturas', a.id, 'editar']"
+                [attr.aria-label]="'Editar ' + a.jobTitle"
+              >
+                Editar
+              </a>
+              <button
+                class="danger"
+                (click)="deletion.open('/applications/' + a.id, a.jobTitle)"
+                [disabled]="store.busy()"
+                [attr.aria-label]="'Excluir ' + a.jobTitle"
+              >
+                Excluir
+              </button>
+            </div>
+          </td>
         </tr>
       } @empty {
-        <tr><td colspan="5" class="empty-cell"><div class="empty-state"><span class="empty-symbol" aria-hidden="true">↗</span><h3>{{ store.busy() ? 'Carregando candidaturas…' : 'Sua próxima oportunidade começa aqui' }}</h3><p>{{ store.busy() ? 'Aguarde enquanto buscamos seus dados.' : 'Cadastre sua primeira candidatura para acompanhar cada etapa do processo.' }}</p>@if (!store.busy()) { <button (click)="open()">Cadastrar candidatura</button> }</div></td></tr>
+        <tr>
+          <td colspan="5" class="empty-cell">
+            <div class="empty-state">
+              <span class="empty-symbol" aria-hidden="true">↗</span>
+              <h3>
+                {{
+                  store.busy() ? 'Carregando candidaturas…' : 'Sua próxima oportunidade começa aqui'
+                }}
+              </h3>
+              <p>
+                {{
+                  store.busy()
+                    ? 'Aguarde enquanto buscamos seus dados.'
+                    : 'Cadastre sua primeira candidatura para acompanhar cada etapa do processo.'
+                }}
+              </p>
+              @if (!store.busy()) {
+                <button (click)="open()">Cadastrar candidatura</button>
+              }
+            </div>
+          </td>
+        </tr>
       }
     </tbody>
   </table>
 </section>
 <app-delete-dialog #deletion />
 <dialog #applicationDialog aria-labelledby="application-title" (cancel)="cancel($event)">
-  <div class="heading"><h2 id="application-title">Nova candidatura</h2><button type="button" aria-label="Fechar cadastro de candidatura" (click)="close()" [disabled]="store.busy()">✕</button></div>
-  @if (store.error()) { <p class="error" role="alert">{{ store.error() }}</p> }
+  <div class="heading">
+    <h2 id="application-title">Nova candidatura</h2>
+    <button
+      type="button"
+      aria-label="Fechar cadastro de candidatura"
+      (click)="close()"
+      [disabled]="store.busy()"
+    >
+      ✕
+    </button>
+  </div>
+  @if (store.error()) {
+    <p class="error" role="alert">{{ store.error() }}</p>
+  }
   @if (!store.companies().length || !store.stages().length) {
     <p class="muted">Para criar uma candidatura, cadastre uma empresa e uma etapa.</p>
-    <div class="actions"><a routerLink="/empresas">Cadastrar empresa</a><a routerLink="/etapas">Cadastrar etapa</a></div>
+    <div class="actions">
+      <a routerLink="/empresas">Cadastrar empresa</a>
+      <a routerLink="/etapas">Cadastrar etapa</a>
+    </div>
   } @else {
     <form #applicationForm="ngForm" (ngSubmit)="create()">
-      <label>Vaga<input name="jobTitle" [(ngModel)]="application.jobTitle" required maxlength="180" autofocus></label>
-      <label>Empresa<app-select name="companyId" [options]="companyOptions()" [(ngModel)]="application.companyId" ariaLabel="Empresa" placeholder="Selecione uma empresa" [disabled]="store.busy()" [required]="true" /></label>
-      <label>Etapa<app-select name="stageId" [options]="stageOptions()" [(ngModel)]="application.stageId" ariaLabel="Etapa" placeholder="Selecione uma etapa" [disabled]="store.busy()" [required]="true" /></label>
-      <label>Data da candidatura<input type="date" name="appliedAt" [(ngModel)]="application.appliedAt" required></label>
-      <div class="actions modal-actions"><button type="button" (click)="close()" [disabled]="store.busy()">Cancelar</button><button class="primary" [disabled]="applicationForm.invalid || store.busy()">{{ store.busy() ? 'Salvando…' : 'Salvar candidatura' }}</button></div>
+      <label>
+        Vaga
+        <input
+          name="jobTitle"
+          [(ngModel)]="application.jobTitle"
+          required
+          maxlength="180"
+          autofocus
+        />
+      </label>
+      <label>
+        Empresa
+        <app-select
+          name="companyId"
+          [options]="companyOptions()"
+          [(ngModel)]="application.companyId"
+          ariaLabel="Empresa"
+          placeholder="Selecione uma empresa"
+          [disabled]="store.busy()"
+          [required]="true"
+        />
+      </label>
+      <label>
+        Etapa
+        <app-select
+          name="stageId"
+          [options]="stageOptions()"
+          [(ngModel)]="application.stageId"
+          ariaLabel="Etapa"
+          placeholder="Selecione uma etapa"
+          [disabled]="store.busy()"
+          [required]="true"
+        />
+      </label>
+      <label>
+        Data da candidatura
+        <input type="date" name="appliedAt" [(ngModel)]="application.appliedAt" required />
+      </label>
+      <div class="actions modal-actions">
+        <button type="button" (click)="close()" [disabled]="store.busy()">Cancelar</button>
+        <button class="primary" [disabled]="applicationForm.invalid || store.busy()">
+          {{ store.busy() ? 'Salvando…' : 'Salvar candidatura' }}
+        </button>
+      </div>
     </form>
   }
 </dialog>

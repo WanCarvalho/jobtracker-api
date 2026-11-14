@@ -6,7 +6,7 @@ import { TrackerStore } from './tracker.store';
 @Component({
   selector: 'app-root',
   imports: [FormsModule, RouterLink, RouterLinkActive, RouterOutlet],
-  templateUrl: './app.html'
+  templateUrl: './app.html',
 })
 export class App {
   readonly store = inject(TrackerStore);

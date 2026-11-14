@@ -41,7 +41,8 @@ public class StageController {
     }
 
     @PutMapping("/{id}")
-    StageResponse update(@PathVariable Long id, @Valid @RequestBody StageRequest r, Authentication a) {
+    StageResponse update(
+            @PathVariable Long id, @Valid @RequestBody StageRequest r, Authentication a) {
         return service.update(id, r, a.getName());
     }
 

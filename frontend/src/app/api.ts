@@ -2,11 +2,49 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 
-export interface Session { token: string; userId: number; name: string; email: string; role: string }
-export interface Company { id: number; name: string; approvalStatus: string; cnpj: string | null; website: string | null; description: string | null; createdById: number; createdByName: string; reviewNotes: string | null }
-export interface Stage { id: number; name: string; color: string; isFinal: boolean; isActive: boolean; position: number }
-export interface Application { id: number; jobTitle: string; companyName: string; stageName: string; stageId: number; appliedAt: string; companyId: number; salary: number | null; jobUrl: string | null; description: string | null }
-export interface Summary { totalApplications: number; activeApplications: number; finalApplications: number }
+export interface Session {
+  token: string;
+  userId: number;
+  name: string;
+  email: string;
+  role: string;
+}
+export interface Company {
+  id: number;
+  name: string;
+  approvalStatus: string;
+  cnpj: string | null;
+  website: string | null;
+  description: string | null;
+  createdById: number;
+  createdByName: string;
+  reviewNotes: string | null;
+}
+export interface Stage {
+  id: number;
+  name: string;
+  color: string;
+  isFinal: boolean;
+  isActive: boolean;
+  position: number;
+}
+export interface Application {
+  id: number;
+  jobTitle: string;
+  companyName: string;
+  stageName: string;
+  stageId: number;
+  appliedAt: string;
+  companyId: number;
+  salary: number | null;
+  jobUrl: string | null;
+  description: string | null;
+}
+export interface Summary {
+  totalApplications: number;
+  activeApplications: number;
+  finalApplications: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class Api {
@@ -16,19 +54,40 @@ export class Api {
     try {
       const value = JSON.parse(sessionStorage.getItem('jobtracker.session') ?? 'null');
       return value && typeof value.token === 'string' ? value : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
-  async authenticate(register: boolean, credentials: { name: string; email: string; password: string }) {
-    const session = await this.post<Session>(`/auth/${register ? 'register' : 'login'}`, credentials);
+  async authenticate(
+    register: boolean,
+    credentials: { name: string; email: string; password: string },
+  ) {
+    const session = await this.post<Session>(
+      `/auth/${register ? 'register' : 'login'}`,
+      credentials,
+    );
     sessionStorage.setItem('jobtracker.session', JSON.stringify(session));
     this.session.set(session);
   }
-  logout() { sessionStorage.removeItem('jobtracker.session'); this.session.set(null); }
-  get<T>(path: string) { return firstValueFrom(this.http.get<T>(`/api${path}`)); }
-  post<T>(path: string, body: unknown) { return firstValueFrom(this.http.post<T>(`/api${path}`, body)); }
-  put<T>(path: string, body: unknown) { return firstValueFrom(this.http.put<T>(`/api${path}`, body)); }
-  delete(path: string) { return firstValueFrom(this.http.delete<void>(`/api${path}`)); }
-  patch<T>(path: string, body: unknown) { return firstValueFrom(this.http.patch<T>(`/api${path}`, body)); }
+  logout() {
+    sessionStorage.removeItem('jobtracker.session');
+    this.session.set(null);
+  }
+  get<T>(path: string) {
+    return firstValueFrom(this.http.get<T>(`/api${path}`));
+  }
+  post<T>(path: string, body: unknown) {
+    return firstValueFrom(this.http.post<T>(`/api${path}`, body));
+  }
+  put<T>(path: string, body: unknown) {
+    return firstValueFrom(this.http.put<T>(`/api${path}`, body));
+  }
+  delete(path: string) {
+    return firstValueFrom(this.http.delete<void>(`/api${path}`));
+  }
+  patch<T>(path: string, body: unknown) {
+    return firstValueFrom(this.http.patch<T>(`/api${path}`, body));
+  }
 }
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
@@ -36,9 +95,14 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const isApi = request.url.startsWith('/api/');
   const isAuth = request.url === '/api/auth/login' || request.url === '/api/auth/register';
   const token = api.session()?.token;
-  return next(isApi && !isAuth && token ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : request)
-    .pipe(catchError((error: HttpErrorResponse) => {
+  return next(
+    isApi && !isAuth && token
+      ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : request,
+  ).pipe(
+    catchError((error: HttpErrorResponse) => {
       if (isApi && !isAuth && error.status === 401) api.logout();
       return throwError(() => error);
-    }));
+    }),
+  );
 };

@@ -15,5 +15,4 @@ public record ApplicationResponse(
         BigDecimal salary,
         String jobUrl,
         String description,
-        LocalDate appliedAt
-) {}
+        LocalDate appliedAt) {}

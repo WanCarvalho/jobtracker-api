@@ -13,5 +13,4 @@ public record CompanyResponse(
         String createdByName,
         Long reviewedById,
         LocalDateTime reviewedAt,
-        String reviewNotes
-) {}
+        String reviewNotes) {}

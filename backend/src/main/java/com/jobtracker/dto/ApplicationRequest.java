@@ -10,9 +10,8 @@ import java.time.LocalDate;
 public record ApplicationRequest(
         @NotNull Long companyId,
         @NotNull Long stageId,
-        @NotBlank @Size(max=180) String jobTitle,
+        @NotBlank @Size(max = 180) String jobTitle,
         @DecimalMin("0.0") BigDecimal salary,
-        @Size(max=1000) String jobUrl,
+        @Size(max = 1000) String jobUrl,
         String description,
-        @NotNull LocalDate appliedAt
-) {}
+        @NotNull LocalDate appliedAt) {}

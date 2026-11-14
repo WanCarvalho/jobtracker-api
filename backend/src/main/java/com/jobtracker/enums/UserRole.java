@@ -1,4 +1,6 @@
 package com.jobtracker.enums;
 
-
-public enum UserRole { USER, SUPER_ADMIN }
+public enum UserRole {
+    USER,
+    SUPER_ADMIN
+}

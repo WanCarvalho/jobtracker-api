@@ -51,3 +51,14 @@ O build estático fica em `frontend/dist/jobtracker-frontend/browser`. Em produ�
 cd backend
 mvn test
 ```
+
+## Formatação
+
+O frontend usa Prettier com dois espaços de indentação. Na pasta `frontend`,
+execute `npm run format` para formatar ou `npm run format:check` para conferir.
+
+O backend usa Spotless com Google Java Format no estilo AOSP, com quatro espaços
+de indentação. Na pasta `backend`, execute `mvn spotless:apply` para formatar ou
+`mvn spotless:check` para conferir. A primeira execução baixa o formatador pelo Maven.
+
+As configurações ficam em `.editorconfig`, `frontend/.prettierrc` e `backend/pom.xml`.

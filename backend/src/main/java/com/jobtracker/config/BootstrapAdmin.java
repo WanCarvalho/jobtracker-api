@@ -11,9 +11,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class BootstrapAdmin {
- @Bean CommandLineRunner createSuperAdmin(UserRepository users,PasswordEncoder encoder,
-  @Value("${app.bootstrap.superadmin-email}") String email,
-  @Value("${app.bootstrap.superadmin-password}") String password){
-  return args->{if(users.findByEmailIgnoreCase(email).isEmpty())users.save(new User("Superadmin",email.toLowerCase(),encoder.encode(password),UserRole.SUPER_ADMIN));};
- }
+    @Bean
+    CommandLineRunner createSuperAdmin(
+            UserRepository users,
+            PasswordEncoder encoder,
+            @Value("${app.bootstrap.superadmin-email}") String email,
+            @Value("${app.bootstrap.superadmin-password}") String password) {
+        return args -> {
+            if (users.findByEmailIgnoreCase(email).isEmpty())
+                users.save(
+                        new User(
+                                "Superadmin",
+                                email.toLowerCase(),
+                                encoder.encode(password),
+                                UserRole.SUPER_ADMIN));
+        };
+    }
 }

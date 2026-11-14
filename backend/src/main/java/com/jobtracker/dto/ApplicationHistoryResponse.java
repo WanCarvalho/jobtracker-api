@@ -10,5 +10,4 @@ public record ApplicationHistoryResponse(
         String newStageName,
         String changedBy,
         String notes,
-        LocalDateTime changedAt
-) {}
+        LocalDateTime changedAt) {}
