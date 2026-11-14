@@ -16,6 +16,9 @@ public class JobApplication {
  @Column(columnDefinition="TEXT") private String description;
  @Column(nullable=false) private LocalDate appliedAt;
  private LocalDateTime createdAt; private LocalDateTime updatedAt;
+ private LocalDateTime deletedAt;
+ public boolean isDeleted(){return deletedAt != null;}
+ public void softDelete(){this.deletedAt=LocalDateTime.now();this.updatedAt=this.deletedAt;}
  protected JobApplication(){}
  public JobApplication(User user,Company company,ApplicationStage stage,String title,BigDecimal salary,String url,String description,LocalDate appliedAt){this.user=user;this.company=company;this.stage=stage;this.jobTitle=title;this.salary=salary;this.jobUrl=url;this.description=description;this.appliedAt=appliedAt;this.createdAt=LocalDateTime.now();this.updatedAt=this.createdAt;}
  public void update(Company company,ApplicationStage stage,String title,BigDecimal salary,String url,String description,LocalDate appliedAt){this.company=company;this.stage=stage;this.jobTitle=title;this.salary=salary;this.jobUrl=url;this.description=description;this.appliedAt=appliedAt;this.updatedAt=LocalDateTime.now();}

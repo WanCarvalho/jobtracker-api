@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
@@ -15,12 +16,83 @@ import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class ApiRegressionTests {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
+    @Autowired JdbcTemplate jdbc;
+
+    @Test
+    void editsViewsAndSoftDeletesRecordsWhilePreservingHistoryAndOwnership() throws Exception {
+        String token = register(UUID.randomUUID() + "@example.com");
+        String outsider = register(UUID.randomUUID() + "@example.com");
+        JsonNode company = request(post("/api/companies"), token, Map.of("name", "Original company"), 201);
+        long companyId = company.get("id").asLong();
+        String companyPath = "/api/companies/" + companyId;
+        request(put(companyPath), outsider, Map.of("name", "Unauthorized"), 403);
+        JsonNode editedCompany = request(put(companyPath), token,
+                Map.of("name", "Updated company", "cnpj", "12345678000199", "description", "Company description"), 200);
+        assertEquals("Updated company", editedCompany.get("name").asText());
+        assertEquals("Company description", request(get(companyPath), token, null, 200).get("description").asText());
+
+        JsonNode stage = request(post("/api/stages"), token,
+                Map.of("name", "Initial", "position", 0, "color", "#2563eb", "isFinal", false), 201);
+        long stageId = stage.get("id").asLong();
+        String stagePath = "/api/stages/" + stageId;
+        request(get(stagePath), outsider, null, 403);
+        request(put(stagePath), token,
+                Map.of("name", "Interview", "position", 0, "color", "#123456", "isFinal", true), 200);
+        assertEquals("Interview", request(get(stagePath), token, null, 200).get("name").asText());
+
+        var payload = new java.util.HashMap<String, Object>(Map.of("companyId", companyId, "stageId", stageId, "jobTitle", "Developer",
+                "salary", 12500, "jobUrl", "https://example.com/job", "description", "Details", "appliedAt", "2026-11-13"));
+        JsonNode app = request(post("/api/applications"), token, payload, 201);
+        long appId = app.get("id").asLong();
+        String appPath = "/api/applications/" + appId;
+        request(post(appPath + "/notes"), token, Map.of("content", "Keep this note"), 201);
+        payload.put("jobTitle", "Senior Developer");
+        payload.put("salary", 15000);
+        request(put(appPath), outsider, payload, 403);
+        request(put(appPath), token, payload, 200);
+        assertEquals("Senior Developer", request(get(appPath), token, null, 200).get("jobTitle").asText());
+
+        mvc.perform(delete(companyPath).header("Authorization", "Bearer " + outsider)).andExpect(status().isForbidden());
+        mvc.perform(delete(stagePath).header("Authorization", "Bearer " + outsider)).andExpect(status().isForbidden());
+        mvc.perform(delete(appPath).header("Authorization", "Bearer " + outsider)).andExpect(status().isForbidden());
+        mvc.perform(delete(companyPath).header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
+        mvc.perform(delete(stagePath).header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
+        request(get(companyPath), token, null, 404);
+        request(get(stagePath), token, null, 404);
+        request(put(companyPath), token, Map.of("name", "Deleted"), 404);
+        request(put(stagePath), token, Map.of("name", "Deleted", "position", 0, "color", "blue"), 404);
+        for (JsonNode visible : request(get("/api/companies"), token, null, 200)) {
+            assertNotEquals(companyId, visible.get("id").asLong());
+        }
+        assertEquals(0, request(get("/api/stages"), token, null, 200).size());
+        request(post("/api/applications"), token, payload, 404);
+        // Existing applications can still be viewed and edited with their historical links.
+        assertEquals("Updated company", request(get(appPath), token, null, 200).get("companyName").asText());
+        assertEquals(15000, request(put(appPath), token, payload, 200).get("salary").asInt());
+
+        mvc.perform(delete(appPath).header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
+        request(get(appPath), token, null, 404);
+        request(put(appPath), token, payload, 404);
+        request(get(appPath + "/history"), token, null, 404);
+        request(get(appPath + "/notes"), token, null, 404);
+        request(post(appPath + "/notes"), token, Map.of("content", "Hidden"), 404);
+        assertEquals(0, request(get("/api/applications"), token, null, 200).size());
+        JsonNode summary = request(get("/api/dashboard/summary"), token, null, 200);
+        assertEquals(0, summary.get("totalApplications").asInt());
+        assertEquals(0, summary.get("finalApplications").asInt());
+        assertEquals(1, jdbc.queryForObject("select count(*) from job_applications where id = ? and deleted_at is not null", Integer.class, appId));
+        assertEquals(1, jdbc.queryForObject("select count(*) from companies where id = ? and deleted_at is not null", Integer.class, companyId));
+        assertEquals(1, jdbc.queryForObject("select count(*) from application_stages where id = ? and is_active = false", Integer.class, stageId));
+        assertEquals(1, jdbc.queryForObject("select count(*) from application_notes where application_id = ?", Integer.class, appId));
+        assertEquals(1, jdbc.queryForObject("select count(*) from application_history where application_id = ?", Integer.class, appId));
+    }
 
     @Test
     void preservesRoutesPayloadsJwtAndOwnership() throws Exception {

@@ -4,16 +4,25 @@ import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { TrackerStore } from '../tracker.store';
 import { Select } from '../shared/select';
+import { DeleteDialog } from '../shared/delete-dialog';
+import { Application } from '../api';
 
 @Component({
-  imports: [FormsModule, RouterLink, DatePipe, Select],
+  imports: [FormsModule, RouterLink, DatePipe, Select, DeleteDialog],
   templateUrl: './dashboard.html'
 })
 export class Dashboard {
   readonly store = inject(TrackerStore);
   readonly companyOptions = computed(() => this.store.companies().map(company => ({ value: company.id, label: company.name })));
   readonly stageOptions = computed(() => this.store.stages().map(stage => ({ value: stage.id, label: stage.name })));
-  move(id: number, stageId: number | null) { if (stageId !== null) this.store.move(id, String(stageId)); }
+  optionsFor(application: Application) {
+    const options = this.stageOptions();
+    return options.some(s => s.value === application.stageId) ? options
+      : [...options, { value: application.stageId, label: application.stageName + ' (desativada)' }];
+  }
+  move(id: number, stageId: number | null) {
+    if (stageId !== null && this.store.applications().find(a => a.id === id)?.stageId !== stageId) this.store.move(id, String(stageId));
+  }
   @ViewChild('applicationDialog', { static: true }) dialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('applicationForm') form?: NgForm;
   private emptyApplication() {

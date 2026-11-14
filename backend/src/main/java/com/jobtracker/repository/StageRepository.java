@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StageRepository extends JpaRepository<ApplicationStage,Long> {
  List<ApplicationStage> findByUserIdAndIsActiveTrueOrderByPosition(Long userId);
+ boolean existsByUserIdAndNameIgnoreCaseAndIdNot(Long userId,String name,Long id);
  boolean existsByUserIdAndNameIgnoreCase(Long userId,String name);
 }

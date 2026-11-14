@@ -19,12 +19,14 @@ export class TrackerStore {
     if (this.busy()) return;
     this.busy.set(true); this.error.set('');
     try { await action(); }
-    catch (error) {
-      const e = error as HttpErrorResponse;
-      this.error.set(e.status === 0 ? 'Não foi possível conectar à API. Verifique se o backend está em execução.'
-        : e.status === 401 ? 'Sessão expirada ou credenciais inválidas. Entre novamente.'
-        : e.error?.error || (e.error?.errors ? Object.values(e.error.errors).join('; ') : 'Não foi possível concluir a operação.'));
-    } finally { this.busy.set(false); }
+    catch (error) { this.reportError(error); }
+    finally { this.busy.set(false); }
+  }
+  reportError(error: unknown) {
+    const e = error as HttpErrorResponse;
+    this.error.set(e.status === 0 ? 'Não foi possível conectar à API. Verifique se o backend está em execução.'
+      : e.status === 401 ? 'Sessão expirada ou credenciais inválidas. Entre novamente.'
+      : e.error?.error || (e.error?.errors ? Object.values(e.error.errors).join('; ') : 'Não foi possível concluir a operação.'));
   }
   async load() {
     const [applications, companies, stages, summary] = await Promise.all([

@@ -3,9 +3,9 @@ import { HttpClient, HttpErrorResponse, HttpInterceptorFn } from '@angular/commo
 import { catchError, firstValueFrom, throwError } from 'rxjs';
 
 export interface Session { token: string; userId: number; name: string; email: string; role: string }
-export interface Company { id: number; name: string; approvalStatus: string }
-export interface Stage { id: number; name: string; color: string; isFinal: boolean; isActive: boolean }
-export interface Application { id: number; jobTitle: string; companyName: string; stageName: string; stageId: number; appliedAt: string }
+export interface Company { id: number; name: string; approvalStatus: string; cnpj: string | null; website: string | null; description: string | null; createdById: number; createdByName: string; reviewNotes: string | null }
+export interface Stage { id: number; name: string; color: string; isFinal: boolean; isActive: boolean; position: number }
+export interface Application { id: number; jobTitle: string; companyName: string; stageName: string; stageId: number; appliedAt: string; companyId: number; salary: number | null; jobUrl: string | null; description: string | null }
 export interface Summary { totalApplications: number; activeApplications: number; finalApplications: number }
 
 @Injectable({ providedIn: 'root' })
@@ -26,6 +26,8 @@ export class Api {
   logout() { sessionStorage.removeItem('jobtracker.session'); this.session.set(null); }
   get<T>(path: string) { return firstValueFrom(this.http.get<T>(`/api${path}`)); }
   post<T>(path: string, body: unknown) { return firstValueFrom(this.http.post<T>(`/api${path}`, body)); }
+  put<T>(path: string, body: unknown) { return firstValueFrom(this.http.put<T>(`/api${path}`, body)); }
+  delete(path: string) { return firstValueFrom(this.http.delete<void>(`/api${path}`)); }
   patch<T>(path: string, body: unknown) { return firstValueFrom(this.http.patch<T>(`/api${path}`, body)); }
 }
 

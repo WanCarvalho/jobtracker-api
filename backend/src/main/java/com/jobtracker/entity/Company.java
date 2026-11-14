@@ -18,6 +18,9 @@ public class Company {
  private LocalDateTime reviewedAt;
  @Column(length=1000) private String reviewNotes;
  private LocalDateTime createdAt; private LocalDateTime updatedAt;
+ private LocalDateTime deletedAt;
+ public boolean isDeleted(){return deletedAt != null;}
+ public void softDelete(){this.deletedAt=LocalDateTime.now();this.updatedAt=this.deletedAt;}
  protected Company(){}
  public Company(String name,String normalizedName,String cnpj,String website,String description,User creator){
   this.name=name;this.normalizedName=normalizedName;this.cnpj=cnpj;this.website=website;this.description=description;
