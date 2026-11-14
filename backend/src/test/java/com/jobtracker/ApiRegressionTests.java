@@ -6,8 +6,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.util.Base64;
 import java.util.Map;
 import java.util.UUID;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,6 +27,50 @@ class ApiRegressionTests {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @Autowired JdbcTemplate jdbc;
+
+    @Test
+    void savesProfileImageForTheAuthenticatedUserAndPreservesItAcrossLogins() throws Exception {
+        String email = UUID.randomUUID() + "@example.com";
+        String token = register(email);
+        String outsider = register(UUID.randomUUID() + "@example.com");
+        String path = "/api/auth/me/profile-image";
+        mvc.perform(get("/api/auth/me")).andExpect(status().isForbidden());
+        mvc.perform(
+                        put(path)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"image\":\"test\"}"))
+                .andExpect(status().isForbidden());
+
+        String image = pngImage(32, 32);
+        JsonNode updated = request(put(path), token, Map.of("image", image), 200);
+        assertEquals(image, updated.get("profileImage").asText());
+        assertEquals(email, updated.get("email").asText());
+        assertEquals(
+                image, request(get("/api/auth/me"), token, null, 200).get("profileImage").asText());
+        assertTrue(request(get("/api/auth/me"), outsider, null, 200).get("profileImage").isNull());
+
+        JsonNode login =
+                request(
+                        post("/api/auth/login"),
+                        null,
+                        Map.of("email", email, "password", "Password123!"),
+                        200);
+        assertEquals(image, login.get("profileImage").asText());
+        request(put(path), token, Map.of("image", "data:image/svg+xml;base64,PHN2Zz4="), 400);
+        request(put(path), token, Map.of("image", "data:image/png;base64,invalid"), 400);
+        request(put(path), token, Map.of("image", "data:image/png;base64,dGV4dA=="), 400);
+        request(put(path), token, Map.of("image", image.replace("image/png", "image/jpeg")), 400);
+        request(put(path), token, Map.of("image", pngImage(1025, 1)), 400);
+        request(put(path), token, Map.of("image", "A".repeat(700001)), 400);
+        assertEquals(
+                image, request(get("/api/auth/me"), token, null, 200).get("profileImage").asText());
+    }
+
+    private String pngImage(int width, int height) throws Exception {
+        var output = new ByteArrayOutputStream();
+        ImageIO.write(new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png", output);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(output.toByteArray());
+    }
 
     @Test
     void editsViewsAndSoftDeletesRecordsWhilePreservingHistoryAndOwnership() throws Exception {

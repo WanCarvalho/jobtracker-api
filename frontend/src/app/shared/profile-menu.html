@@ -1,0 +1,107 @@
+<details #menu class="user-menu">
+  <summary [attr.aria-label]="'Opções de ' + store.api.session()?.name" title="Opções do usuário">
+    @if (store.api.session()?.profileImage; as image) {
+      <img class="avatar" [src]="image" alt="Imagem de perfil" />
+    } @else {
+      <svg
+        class="user-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.7"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+      </svg>
+    }
+  </summary>
+  <div class="user-options">
+    <div class="user-identity">
+      <p class="user-name">{{ store.api.session()?.name }}</p>
+      <p class="user-email">{{ store.api.session()?.email }}</p>
+    </div>
+    <button type="button" (click)="openImageEditor()" [disabled]="store.busy()">
+      Editar imagem de perfil
+    </button>
+    <button type="button" class="danger" (click)="logout()" [disabled]="store.busy()">Sair</button>
+  </div>
+</details>
+
+<dialog #imageDialog aria-labelledby="profile-image-title" (cancel)="cancel($event)">
+  <div class="heading">
+    <h2 id="profile-image-title">Editar imagem de perfil</h2>
+    <button
+      type="button"
+      aria-label="Fechar edição da imagem de perfil"
+      (click)="closeEditor()"
+      [disabled]="store.busy() || reading()"
+    >
+      ✕
+    </button>
+  </div>
+  <div class="profile-preview">
+    @if (draft(); as image) {
+      <img [src]="image" alt="Prévia da imagem de perfil" />
+    } @else {
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21v-2a8 8 0 0 1 16 0v2" />
+      </svg>
+    }
+  </div>
+  <p class="muted" id="profile-image-help">
+    Escolha uma imagem PNG, JPEG ou WebP de até 5 MB. A prévia mostra o recorte central que será
+    salvo.
+  </p>
+  <input
+    #imageInput
+    class="sr-only"
+    type="file"
+    accept="image/png,image/jpeg,image/webp"
+    aria-label="Imagem de perfil"
+    aria-describedby="profile-image-help"
+    [disabled]="store.busy() || reading()"
+    (change)="selectImage($event)"
+  />
+  <button
+    type="button"
+    class="choose-image"
+    autofocus
+    (click)="imageInput.click()"
+    [disabled]="store.busy() || reading()"
+  >
+    {{ reading() ? 'Preparando imagem…' : 'Escolher imagem' }}
+  </button>
+  @if (imageError()) {
+    <p class="error" role="alert">{{ imageError() }}</p>
+  }
+  @if (store.error()) {
+    <p class="error" role="alert">{{ store.error() }}</p>
+  }
+  <div class="actions modal-actions">
+    <button type="button" (click)="closeEditor()" [disabled]="store.busy() || reading()">
+      Cancelar
+    </button>
+    <button
+      type="button"
+      class="primary"
+      (click)="save()"
+      [disabled]="
+        store.busy() ||
+        reading() ||
+        !!imageError() ||
+        !draft() ||
+        draft() === store.api.session()?.profileImage
+      "
+    >
+      {{ store.busy() ? 'Salvando…' : 'Salvar imagem' }}
+    </button>
+  </div>
+</dialog>

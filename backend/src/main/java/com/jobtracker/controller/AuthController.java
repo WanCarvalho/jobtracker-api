@@ -4,6 +4,7 @@ import com.jobtracker.dto.AuthLoginRequest;
 import com.jobtracker.dto.AuthRegisterRequest;
 import com.jobtracker.dto.AuthResponse;
 import com.jobtracker.dto.AuthUserResponse;
+import com.jobtracker.dto.ProfileImageRequest;
 import com.jobtracker.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
@@ -32,5 +33,11 @@ public class AuthController {
     @GetMapping("/me")
     AuthUserResponse me(Authentication a) {
         return service.me(a.getName());
+    }
+
+    @PutMapping("/me/profile-image")
+    AuthUserResponse updateProfileImage(
+            @Valid @RequestBody ProfileImageRequest request, Authentication authentication) {
+        return service.updateProfileImage(request.image(), authentication.getName());
     }
 }

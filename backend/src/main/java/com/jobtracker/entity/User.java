@@ -20,6 +20,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(columnDefinition = "TEXT")
+    private String profileImage;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private UserRole role;
@@ -51,6 +54,14 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
     public UserRole getRole() {

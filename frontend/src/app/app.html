@@ -3,11 +3,8 @@
     <strong>JobTracker</strong>
     <span>Seu próximo passo começa aqui.</span>
   </div>
-  @if (store.api.session(); as user) {
-    <div>
-      {{ user.name }}
-      <button (click)="store.logout()" [disabled]="store.busy()">Sair</button>
-    </div>
+  @if (store.api.session()) {
+    <app-profile-menu />
   }
 </header>
 @if (store.api.session()) {

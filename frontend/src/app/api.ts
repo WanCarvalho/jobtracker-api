@@ -8,6 +8,7 @@ export interface Session {
   name: string;
   email: string;
   role: string;
+  profileImage: string | null;
 }
 export interface Company {
   id: number;
@@ -19,6 +20,14 @@ export interface Company {
   createdById: number;
   createdByName: string;
   reviewNotes: string | null;
+}
+
+interface ProfileUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  profileImage: string | null;
 }
 export interface Stage {
   id: number;
@@ -72,6 +81,15 @@ export class Api {
   logout() {
     sessionStorage.removeItem('jobtracker.session');
     this.session.set(null);
+  }
+  async updateProfileImage(image: string) {
+    const session = this.session();
+    if (!session) return;
+    const user = await this.put<ProfileUser>('/auth/me/profile-image', { image });
+    if (this.session()?.token !== session.token) return;
+    const updated = { ...session, profileImage: user.profileImage };
+    sessionStorage.setItem('jobtracker.session', JSON.stringify(updated));
+    this.session.set(updated);
   }
   get<T>(path: string) {
     return firstValueFrom(this.http.get<T>(`/api${path}`));

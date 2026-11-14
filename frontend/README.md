@@ -16,6 +16,11 @@ O arquivo `proxy.conf.json` encaminha `/api/**` para a API. O serviço em
 `src/app/api.ts` centraliza HTTP, sessão e envio do JWT. A sessão fica no
 sessionStorage da aba e é removida ao sair ou receber HTTP 401.
 
+O ícone do usuário no canto superior direito abre as opções de editar a imagem
+de perfil e sair. O editor aceita PNG, JPEG ou WebP de até 5 MB, mostra uma prévia
+do recorte central e salva uma versão de 256 × 256 pixels vinculada à conta.
+A imagem permanece disponível nos próximos acessos.
+
 A interface inclui cadastro, login, resumo do dashboard, criação, edição e
 exclusão lógica de empresas, etapas e candidaturas, além da visualização de
 candidaturas e da mudança de etapa.
