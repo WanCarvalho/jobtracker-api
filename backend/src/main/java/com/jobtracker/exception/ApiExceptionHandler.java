@@ -3,6 +3,7 @@ package com.jobtracker.exception;
 import java.util.*;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,5 +37,11 @@ public class ApiExceptionHandler {
     ResponseEntity<Map<String, Object>> forbidden(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", "Acesso não permitido."));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    ResponseEntity<Map<String, Object>> unauthorized(AuthenticationException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "E-mail ou senha inválidos."));
     }
 }

@@ -25,6 +25,12 @@ A interface inclui cadastro, login, resumo do dashboard, criação, edição e
 exclusão lógica de empresas, etapas e candidaturas, além da visualização de
 candidaturas e da mudança de etapa.
 
+Contas `SUPER_ADMIN` acessam “Moderação” pela navegação. A tela lista empresas
+pendentes, apresenta possíveis equivalentes por nome normalizado ou CNPJ e
+permite aprovar ou rejeitar com motivo. A rota e os endpoints administrativos
+exigem perfil de superadmin; empresas aprovadas não podem ser editadas
+diretamente.
+
 As telas usam rotas independentes: `/` para dashboard e candidaturas,
 `/empresas` para cadastrar empresas e `/etapas` para cadastrar etapas.
 Cada tela mantém sua listagem e um botão de cadastro que abre o formulário em

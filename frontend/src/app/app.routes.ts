@@ -1,6 +1,16 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router, Routes } from '@angular/router';
+import { Api } from './api';
+
+const superAdminGuard: CanActivateFn = () =>
+  inject(Api).session()?.role === 'SUPER_ADMIN' ? true : inject(Router).createUrlTree(['/']);
 
 export const routes: Routes = [
+  {
+    path: 'admin/empresas-pendentes',
+    canActivate: [superAdminGuard],
+    loadComponent: () => import('./pages/admin-companies').then((m) => m.AdminCompanies),
+  },
   {
     path: 'candidaturas/:id/editar',
     loadComponent: () => import('./pages/application-detail').then((m) => m.ApplicationDetail),

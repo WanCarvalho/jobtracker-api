@@ -29,17 +29,36 @@ class ApiRegressionTests {
     @Autowired JdbcTemplate jdbc;
 
     @Test
+    void returnsClearUnauthorizedResponsesForInvalidCredentialsAndTokens() throws Exception {
+        mvc.perform(
+                        post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(
+                                                Map.of(
+                                                        "email",
+                                                        "admin@jobtracker.local",
+                                                        "password",
+                                                        "WrongPassword123!"))))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("error").value("E-mail ou senha inválidos."));
+
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer invalid-token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void savesProfileImageForTheAuthenticatedUserAndPreservesItAcrossLogins() throws Exception {
         String email = UUID.randomUUID() + "@example.com";
         String token = register(email);
         String outsider = register(UUID.randomUUID() + "@example.com");
         String path = "/api/auth/me/profile-image";
-        mvc.perform(get("/api/auth/me")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
         mvc.perform(
                         put(path)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("{\"image\":\"test\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         String image = pngImage(32, 32);
         JsonNode updated = request(put(path), token, Map.of("image", image), 200);
@@ -225,9 +244,9 @@ class ApiRegressionTests {
 
     @Test
     void preservesRoutesPayloadsJwtAndOwnership() throws Exception {
-        mvc.perform(get("/api/applications")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/applications")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/applications").header("Authorization", "Bearer invalid"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
         String email = UUID.randomUUID() + "@example.com";
         String token = register(email);
@@ -335,6 +354,47 @@ class ApiRegressionTests {
         mvc.perform(patch(approval).header("Authorization", "Bearer " + admin))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("approvalStatus").value("APPROVED"));
+        mvc.perform(
+                        put("/api/companies/" + company.get("id"))
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsBytes(Map.of("name", "Changed"))))
+                .andExpect(status().isConflict());
+        mvc.perform(patch(approval).header("Authorization", "Bearer " + admin))
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("error")
+                                .value("Somente empresas pendentes podem ser analisadas."));
+
+        JsonNode rejectedCompany =
+                request(
+                        post("/api/companies"),
+                        token,
+                        Map.of("name", "Review rejected " + UUID.randomUUID()),
+                        201);
+        String rejection = "/api/admin/companies/" + rejectedCompany.get("id") + "/reject";
+        request(patch(rejection), token, Map.of("reason", "Unauthorized"), 403);
+        JsonNode rejected =
+                request(patch(rejection), admin, Map.of("reason", "Cadastro duplicado."), 200);
+        assertEquals("REJECTED", rejected.get("approvalStatus").asText());
+        assertEquals("Cadastro duplicado.", rejected.get("reviewNotes").asText());
+        mvc.perform(
+                        patch(rejection)
+                                .header("Authorization", "Bearer " + admin)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        mapper.writeValueAsBytes(
+                                                Map.of("reason", "Outra análise"))))
+                .andExpect(status().isConflict())
+                .andExpect(
+                        jsonPath("error")
+                                .value("Somente empresas pendentes podem ser analisadas."));
+        mvc.perform(
+                        patch("/api/admin/companies/" + rejectedCompany.get("id") + "/reject")
+                                .header("Authorization", "Bearer " + admin)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(mapper.writeValueAsBytes(Map.of("reason", " "))))
+                .andExpect(status().isBadRequest());
         request(
                 get("/api/companies/" + company.get("id")),
                 register(UUID.randomUUID() + "@example.com"),
