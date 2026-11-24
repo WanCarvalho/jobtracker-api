@@ -19,6 +19,15 @@
     </a>
     <a routerLink="/empresas" routerLinkActive="active" ariaCurrentWhenActive="page">Empresas</a>
     <a routerLink="/etapas" routerLinkActive="active" ariaCurrentWhenActive="page">Etapas</a>
+    @if (store.api.session()?.role === 'SUPER_ADMIN') {
+      <a
+        routerLink="/admin/empresas-pendentes"
+        routerLinkActive="active"
+        ariaCurrentWhenActive="page"
+      >
+        Moderação
+      </a>
+    }
   </nav>
 }
 <main>

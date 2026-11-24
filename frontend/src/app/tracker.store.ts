@@ -35,7 +35,9 @@ export class TrackerStore {
       e.status === 0
         ? 'Não foi possível conectar à API. Verifique se o backend está em execução.'
         : e.status === 401
-          ? 'Sessão expirada ou credenciais inválidas. Entre novamente.'
+          ? e.url?.endsWith('/api/auth/login')
+            ? (e.error?.error ?? 'E-mail ou senha inválidos.')
+            : 'Sessão expirada ou inválida. Entre novamente.'
           : e.error?.error ||
             (e.error?.errors
               ? Object.values(e.error.errors).join('; ')
