@@ -18,7 +18,7 @@ API REST para registrar e acompanhar candidaturas de emprego. Backend em Java 21
 
 - JDK 21
 - Docker Desktop (opcional, para PostgreSQL)
-- Maven 3.9+ (o Maven Wrapper não foi incluído neste pacote).
+- Não é preciso instalar Maven: o Maven Wrapper (`mvnw`) baixa a versão fixada (3.9.9).
 
 ## Executar rapidamente com H2
 
@@ -26,7 +26,7 @@ API REST para registrar e acompanhar candidaturas de emprego. Backend em Java 21
 .\mvnw.cmd spring-boot:run
 ```
 
-Execute `mvn spring-boot:run` (ou gere um wrapper com `mvn wrapper:wrapper` e depois use `./mvnw spring-boot:run`).
+No Linux ou macOS, use `./mvnw spring-boot:run`.
 
 A aplicação inicia em `http://localhost:8080`. A documentação fica em `http://localhost:8080/swagger-ui.html`.
 
@@ -40,7 +40,7 @@ docker compose ps
 docker compose logs -f backend
 ```
 
-Requer Docker Compose v2. O build compila e executa os testes com H2 dentro de uma imagem Maven/JDK 21. A imagem final contém apenas o JRE e a aplicação, executada sem root. Não é necessário instalar Java ou Maven no host para este fluxo.
+Requer Docker Compose v2. O build usa uma imagem Temurin 21 com o Maven Wrapper e executa os testes H2 (`-DskipITs`), sem precisar de Docker dentro do build. A imagem final contém apenas o JRE e a aplicação, executada sem root. Não é necessário instalar Java ou Maven no host para este fluxo.
 
 A API fica em `http://localhost:8080`, Swagger em `http://localhost:8080/swagger-ui.html` e saúde em `http://localhost:8080/actuator/health`. O backend aguarda o healthcheck do PostgreSQL e conecta em `postgres:5432` pela rede do Compose. Para o DBeaver, use `127.0.0.1:5433`. Pare a API executada pelo Maven antes de subir o container, para liberar a porta 8080.
 
@@ -56,7 +56,7 @@ Esta composição atende ao desenvolvimento e à execução em um único host. P
 docker compose up -d postgres
 $env:SPRING_PROFILES_ACTIVE="postgres"
 $env:DATABASE_URL="jdbc:postgresql://127.0.0.1:5433/jobtracker"
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 O PostgreSQL do Docker usa `127.0.0.1:5433` no Windows e a porta `5432` dentro do container, permitindo manter outra instalação local na porta `5432`. No DBeaver, use host `127.0.0.1`, porta `5433` e banco, usuário e senha `jobtracker`. O volume `jobtracker_data` mantém os dados ao recriar o container; não use `docker compose down -v` para preservar os dados.
@@ -184,4 +184,25 @@ rotas, metodos HTTP, transacoes e regras de seguranca, sem alterar o banco.
 
 Os testes de regressao em `ApiRegressionTests` cobrem JWT, permissoes administrativas,
 isolamento por usuario, validacao, candidaturas, historico, notas e dashboard.
-Execute com `mvn test`.
+Execute com `.\mvnw.cmd test`. Os comandos completos estão na seção "Verificações e testes".
+
+## Verificações e testes
+
+Os comandos abaixo são os mesmos do pipeline (`.github/workflows/ci.yml`). Execute na pasta `backend`
+(no Linux ou macOS, troque `.\mvnw.cmd` por `./mvnw`):
+
+```powershell
+.\mvnw.cmd spotless:check          # conferir formatação Java
+.\mvnw.cmd spotless:apply          # aplicar a formatação
+.\mvnw.cmd test                    # testes H2, sem Docker
+.\mvnw.cmd verify                  # testes H2 + PostgreSQL, com Docker em execução
+.\mvnw.cmd -DskipITs verify        # ciclo completo sem os testes PostgreSQL
+```
+
+Os testes PostgreSQL (`*IT.java`) usam o Testcontainers com PostgreSQL 16.4. Cada classe cria um
+container efêmero, em um banco separado do `docker-compose`, com dados fictícios. Eles cobrem banco vazio,
+atualização V1→V3 com dados antigos, exclusão lógica, imagem de perfil, isolamento entre usuários e
+candidatura em etapa desativada.
+
+A versão do Testcontainers é fixada em `pom.xml` (propriedade `testcontainers.version`). A versão 1.20.x,
+trazida pelo Spring Boot 3.4.5, não funciona com o Docker Engine 29.

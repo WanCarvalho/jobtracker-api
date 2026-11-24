@@ -1,0 +1,10 @@
+# Fim de linha LF no repositório e nos checkouts (ver .editorconfig).
+# O Maven Wrapper em Linux (CI e Docker) falha se o script tiver CRLF.
+* text=auto eol=lf
+
+# Scripts do Windows precisam de CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binários não devem ser alterados pelo Git.
+*.jar binary
